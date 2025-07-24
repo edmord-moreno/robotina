@@ -3,100 +3,143 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Robotina - Tu Secretaria Personal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <title>Robotina Secretaria</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
-      background: #f4f4f9;
+      font-family: 'Inter', sans-serif;
+      background: #f3f4f6;
       margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
+      padding: 20px;
+      color: #1f2937;
     }
-    header {
-      background: #ff6600;
-      color: white;
-      width: 100%;
-      padding: 1rem;
+    h1 {
+      color: #ef6c00;
       text-align: center;
-      font-size: 1.5rem;
     }
-    main {
-      margin-top: 2rem;
-      width: 90%;
+    .robotina-box {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      padding: 20px;
       max-width: 600px;
+      margin: auto;
+    }
+    .response {
+      margin-bottom: 20px;
+      font-size: 18px;
+      font-weight: 600;
       text-align: center;
     }
     .tasks {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 1rem;
-      margin-bottom: 2rem;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
     }
-    button {
-      padding: 1rem;
-      font-size: 1.1rem;
-      background-color: #ffffff;
-      border: 2px solid #ff6600;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    button:hover {
-      background-color: #ff6600;
+    .task-btn {
+      background-color: #ef6c00;
       color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
     }
-    #respuesta {
-      font-size: 1.1rem;
-      margin-top: 1rem;
-      padding: 1rem;
-      background: #e0e0e0;
+    .task-btn:hover {
+      background-color: #e65100;
+    }
+    .input-area {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
       border-radius: 8px;
-      min-height: 50px;
+      border: 1px solid #ccc;
+    }
+    .input-area button {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <header>
-    🤖 Robotina, tu secretaria personal
-  </header>
-  <main>
-    <p><strong>Hola jefe, ¿qué desea que haga por usted hoy?</strong></p>
+
+  <h1>⚙️ Hola jefe, soy Robotina, tu secretaria personal</h1>
+
+  <div class="robotina-box">
+    <div class="response" id="response">Estoy lista para ayudarte. Elige una tarea o escribe una orden.</div>
+
     <div class="tasks">
-      <button onclick="ejecutarTarea('agenda')">📅 Ver agenda del día</button>
-      <button onclick="ejecutarTarea('nuevoEvento')">➕ Agregar nuevo evento</button>
-      <button onclick="ejecutarTarea('pagos')">💰 Mostrar pagos pendientes</button>
-      <button onclick="ejecutarTarea('llamadas')">📞 Recordar llamadas importantes</button>
-      <button onclick="ejecutarTarea('anotar')">📝 Anotar tarea</button>
-      <button onclick="ejecutarTarea('eliminar')">🗑️ Eliminar tarea</button>
+      <button class="task-btn" onclick="executeTask('agenda')">🗓️ Ver agenda</button>
+      <button class="task-btn" onclick="executeTask('pagos')">💳 Recordar pagos</button>
+      <button class="task-btn" onclick="executeTask('llamadas')">📞 Contactos a llamar</button>
+      <button class="task-btn" onclick="executeTask('tareas')">📅 Tareas pendientes</button>
+      <button class="task-btn" onclick="executeTask('descanso')">😴 Recomendar descanso</button>
+      <button class="task-btn" onclick="executeTask('saludo')">😊 Salúdame</button>
     </div>
-    <div id="respuesta"></div>
-  </main>
+
+    <div class="input-area">
+      <input type="text" id="commandInput" placeholder="Escribe tu orden aquí..." />
+      <button onclick="sendCommand()">Enviar</button>
+    </div>
+  </div>
+
   <script>
-    const respuestas = {
-      agenda: "📅 Jefe, su agenda de hoy incluye: reunión con el equipo a las 10:00 AM, almuerzo con cliente a la 1:00 PM y llamada de seguimiento a las 4:30 PM.",
-      nuevoEvento: "➕ Claro jefe, por favor escriba los detalles del nuevo evento en su calendario.",
-      pagos: "💰 Tiene pendiente pagar la factura de internet y la cuota del préstamo del banco.",
-      llamadas: "📞 Debe llamar a: María (10:30 AM), Pedro (12:15 PM), y al abogado (3:00 PM).",
-      anotar: "📝 Dígame qué desea que anote, jefe. Estoy lista para registrar su tarea.",
-      eliminar: "🗑️ ¿Qué tarea desea eliminar, jefe? Indíqueme el nombre o la hora."
+    const responseBox = document.getElementById("response");
+
+    const speak = (text) => {
+      responseBox.innerText = text;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "es-ES";
+      speechSynthesis.speak(utterance);
     };
 
-    function hablar(texto) {
-      const voz = new SpeechSynthesisUtterance(texto);
-      voz.lang = "es-ES";
-      window.speechSynthesis.speak(voz);
-    }
+    const executeTask = (task) => {
+      let message = "";
+      switch (task.toLowerCase()) {
+        case "agenda":
+          message = "Jefe, hoy tiene una reunión a las 10 AM y una cita médica a las 4 PM.";
+          break;
+        case "pagos":
+          message = "Debe pagar el servicio de luz y la mensualidad del curso online.";
+          break;
+        case "llamadas":
+          message = "Tiene pendiente llamar a Ana a las 3 PM y a Luis a las 6 PM.";
+          break;
+        case "tareas":
+          message = "Tareas de hoy: terminar presentación, enviar reporte y confirmar cita.";
+          break;
+        case "descanso":
+          message = "Le recomiendo tomar un descanso de 10 minutos y tomar agua.";
+          break;
+        case "saludo":
+          message = "Hola jefe, estoy feliz de estar a su servicio.";
+          break;
+        default:
+          message = "Lo siento jefe, no reconozco esa orden.";
+          break;
+      }
+      speak(message);
+    };
 
-    function ejecutarTarea(tarea) {
-      const texto = respuestas[tarea] || "Lo siento, jefe. Esa tarea no está disponible todavía.";
-      document.getElementById("respuesta").innerText = texto;
-      hablar(texto);
-    }
+    const sendCommand = () => {
+      const input = document.getElementById("commandInput").value;
+      if (input.trim() !== "") {
+        executeTask(input.trim().toLowerCase());
+        document.getElementById("commandInput").value = "";
+      }
+    };
   </script>
+
 </body>
 </html>
