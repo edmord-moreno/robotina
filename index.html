@@ -3,143 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Robotina Secretaria</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <title>Robotina - Secretaria Personal</title>
   <style>
     body {
-      font-family: 'Inter', sans-serif;
-      background: #f3f4f6;
-      margin: 0;
-      padding: 20px;
-      color: #1f2937;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 2em;
+      color: #333;
     }
     h1 {
-      color: #ef6c00;
-      text-align: center;
+      color: #ff6600;
     }
-    .robotina-box {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-    }
-    .response {
-      margin-bottom: 20px;
-      font-size: 18px;
-      font-weight: 600;
-      text-align: center;
-    }
-    .tasks {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .task-btn {
-      background-color: #ef6c00;
-      color: white;
+    .boton {
+      background-color: #ff6600;
       border: none;
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 16px;
+      color: white;
+      padding: 1em 2em;
+      margin: 1em;
+      font-size: 1.1em;
+      border-radius: 10px;
       cursor: pointer;
-      transition: 0.3s;
     }
-    .task-btn:hover {
-      background-color: #e65100;
+    #respuesta, #tareas {
+      margin-top: 2em;
+      font-size: 1.2em;
     }
-    .input-area {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .input-area input {
-      flex: 1;
+    #inputOrden {
+      margin-top: 1em;
       padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    .input-area button {
-      background-color: #10b981;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
+      width: 300px;
+      font-size: 1em;
     }
   </style>
 </head>
 <body>
-
   <h1>⚙️ Hola jefe, soy Robotina, tu secretaria personal</h1>
 
-  <div class="robotina-box">
-    <div class="response" id="response">Estoy lista para ayudarte. Elige una tarea o escribe una orden.</div>
+  <button class="boton" onclick="saludar()">🔌 Saludar</button>
+  <button class="boton" onclick="mostrarTareas()">📅 Mostrar Tareas</button>
 
-    <div class="tasks">
-      <button class="task-btn" onclick="executeTask('agenda')">🗓️ Ver agenda</button>
-      <button class="task-btn" onclick="executeTask('pagos')">💳 Recordar pagos</button>
-      <button class="task-btn" onclick="executeTask('llamadas')">📞 Contactos a llamar</button>
-      <button class="task-btn" onclick="executeTask('tareas')">📅 Tareas pendientes</button>
-      <button class="task-btn" onclick="executeTask('descanso')">😴 Recomendar descanso</button>
-      <button class="task-btn" onclick="executeTask('saludo')">😊 Salúdame</button>
-    </div>
+  <div id="tareas"></div>
 
-    <div class="input-area">
-      <input type="text" id="commandInput" placeholder="Escribe tu orden aquí..." />
-      <button onclick="sendCommand()">Enviar</button>
-    </div>
-  </div>
+  <input type="text" id="inputOrden" placeholder="Escribe una orden como: agenda, pagos...">
+  <button class="boton" onclick="ejecutarOrden()">Ejecutar Orden</button>
+
+  <div id="respuesta"></div>
 
   <script>
-    const responseBox = document.getElementById("response");
+    function hablar(texto) {
+      const mensaje = new SpeechSynthesisUtterance(texto);
+      mensaje.lang = "es-ES";
+      speechSynthesis.speak(mensaje);
+    }
 
-    const speak = (text) => {
-      responseBox.innerText = text;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "es-ES";
-      speechSynthesis.speak(utterance);
-    };
+    function saludar() {
+      const saludo = "Hola jefe, estoy lista para ayudarte con tus tareas diarias.";
+      document.getElementById("respuesta").innerText = saludo;
+      hablar(saludo);
+    }
 
-    const executeTask = (task) => {
-      let message = "";
-      switch (task.toLowerCase()) {
+    function mostrarTareas() {
+      const tareas = [
+        "Agenda diaria",
+        "Pagos pendientes",
+        "Llamadas importantes",
+        "Tareas por hacer",
+        "Tiempo de descanso"
+      ];
+      let html = "<h3>Estas son tus tareas disponibles:</h3><ul style='list-style:none;'>";
+      tareas.forEach((tarea, i) => {
+        html += `<li><button class='boton' onclick='ejecutarDesdeLista("${tarea}")'>${tarea}</button></li>`;
+      });
+      html += "</ul>";
+      document.getElementById("tareas").innerHTML = html;
+    }
+
+    function ejecutarDesdeLista(tarea) {
+      procesarOrden(tarea.toLowerCase());
+    }
+
+    function ejecutarOrden() {
+      const orden = document.getElementById("inputOrden").value.toLowerCase();
+      procesarOrden(orden);
+    }
+
+    function procesarOrden(orden) {
+      let respuesta = "";
+      switch (orden) {
         case "agenda":
-          message = "Jefe, hoy tiene una reunión a las 10 AM y una cita médica a las 4 PM.";
+        case "agenda diaria":
+          respuesta = "Hoy tienes reunión a las 10 AM y enviar informe a las 3 PM.";
           break;
         case "pagos":
-          message = "Debe pagar el servicio de luz y la mensualidad del curso online.";
+        case "pagos pendientes":
+          respuesta = "Debes pagar el servicio de internet y la luz hoy.";
           break;
         case "llamadas":
-          message = "Tiene pendiente llamar a Ana a las 3 PM y a Luis a las 6 PM.";
+          respuesta = "Tienes una llamada con el cliente Pedro a las 2 PM.";
           break;
         case "tareas":
-          message = "Tareas de hoy: terminar presentación, enviar reporte y confirmar cita.";
+        case "tareas por hacer":
+          respuesta = "Revisar correos, enviar propuesta y preparar presentación.";
           break;
         case "descanso":
-          message = "Le recomiendo tomar un descanso de 10 minutos y tomar agua.";
-          break;
-        case "saludo":
-          message = "Hola jefe, estoy feliz de estar a su servicio.";
+        case "tiempo de descanso":
+          respuesta = "Te recomiendo tomar un descanso de 15 minutos, jefe.";
           break;
         default:
-          message = "Lo siento jefe, no reconozco esa orden.";
-          break;
+          respuesta = "No entiendo la orden, jefe. Por favor escribe una tarea válida.";
       }
-      speak(message);
-    };
-
-    const sendCommand = () => {
-      const input = document.getElementById("commandInput").value;
-      if (input.trim() !== "") {
-        executeTask(input.trim().toLowerCase());
-        document.getElementById("commandInput").value = "";
-      }
-    };
+      document.getElementById("respuesta").innerText = respuesta;
+      hablar(respuesta);
+    }
   </script>
-
 </body>
 </html>
