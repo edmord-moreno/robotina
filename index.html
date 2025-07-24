@@ -2,100 +2,84 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Robotina | Tu Secretaria Personal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Robotina - Tu Secretaria</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
       text-align: center;
       padding: 2rem;
     }
-    #log {
-      background: white;
-      padding: 1rem;
-      margin-top: 1rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      min-height: 100px;
+    h1 {
+      color: #ff6600;
     }
     button {
-      padding: 1rem;
-      font-size: 1rem;
+      background-color: #ff6600;
       border: none;
-      background-color: orange;
       color: white;
-      border-radius: 8px;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      border-radius: 0.5rem;
       cursor: pointer;
+      margin-top: 1rem;
     }
-    button:hover {
-      background-color: darkorange;
+    #transcripcion {
+      margin-top: 2rem;
+      font-style: italic;
+      color: #333;
     }
   </style>
 </head>
 <body>
-  <h1>🤖 Robotina te saluda, jefe</h1>
-  <p>Presiona el botón y da una orden</p>
-  <button onclick="escucharOrden()">🎤 Hablar</button>
-  <div id="log">Aquí aparecerá tu orden...</div>
+  <h1>⚙️ Hola jefe, soy Robotina, tu secretaria personal</h1>
+  <button onclick="hablar()">⚡️ Saludar</button>
+  <button onclick="escuchar()">🎧 Escuchar Orden</button>
+
+  <div id="transcripcion"></div>
 
   <script>
-    const tareas = [];
-    const log = document.getElementById('log');
+    function hablar(texto = "Hola jefe, estoy lista para ayudarte. Puedes darme una orden.") {
+      const mensaje = new SpeechSynthesisUtterance(texto);
+      mensaje.lang = "es-CO";
+      speechSynthesis.speak(mensaje);
+    }
 
-    const hablar = (texto) => {
-      const voz = new SpeechSynthesisUtterance(texto);
-      voz.lang = 'es-ES';
-      speechSynthesis.speak(voz);
-    };
-
-    const ejecutarOrden = (orden) => {
-      orden = orden.toLowerCase();
-      log.innerHTML = "Tú dijiste: <strong>" + orden + "</strong><br>";
-
-      if (orden.includes("hola") || orden.includes("buenos días")) {
-        hablar("Hola jefe, ¿qué ordena?");
-      } else if (orden.includes("anota") || orden.includes("agrega tarea")) {
-        const tarea = orden.replace("anota", "").replace("agrega tarea", "").trim();
-        tareas.push(tarea);
-        hablar("Tarea añadida, jefe: " + tarea);
-      } else if (orden.includes("lista de tareas")) {
-        if (tareas.length === 0) {
-          hablar("No tiene tareas pendientes, jefe.");
-        } else {
-          hablar("Estas son sus tareas del día, jefe:");
-          tareas.forEach((t, i) => {
-            hablar("Tarea " + (i+1) + ": " + t);
-          });
-        }
-      } else if (orden.includes("gracias") || orden.includes("muy bien")) {
-        hablar("A sus órdenes, jefe.");
-      } else {
-        hablar("Lo siento, jefe. Esa orden aún no está en mi programación.");
-      }
-    };
-
-    function escucharOrden() {
-      if (!('webkitSpeechRecognition' in window)) {
-        hablar("Lo siento jefe, su navegador no soporta reconocimiento de voz.");
-        return;
-      }
-
-      const reconocimiento = new webkitSpeechRecognition();
-      reconocimiento.lang = 'es-ES';
+    function escuchar() {
+      const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      reconocimiento.lang = 'es-CO';
       reconocimiento.continuous = false;
       reconocimiento.interimResults = false;
 
+      reconocimiento.onstart = () => {
+        hablar("Te escucho jefe");
+      };
+
+      reconocimiento.onresult = function(event) {
+        const resultado = event.results[0][0].transcript.toLowerCase();
+        document.getElementById("transcripcion").innerText = `Orden recibida: ${resultado}`;
+        procesarOrden(resultado);
+      };
+
+      reconocimiento.onerror = function(event) {
+        hablar("Lo siento jefe, no pude escucharte. Intenta de nuevo.");
+      };
+
       reconocimiento.start();
+    }
 
-      reconocimiento.onresult = (evento) => {
-        const resultado = evento.results[0][0].transcript;
-        ejecutarOrden(resultado);
-      };
-
-      reconocimiento.onerror = () => {
-        hablar("Lo siento jefe, no pude escuchar bien. Intente de nuevo.");
-      };
+    function procesarOrden(orden) {
+      if (orden.includes("agenda")) {
+        hablar("Hoy tienes una cita a las 4 de la tarde con el doctor Pérez y una reunión a las 7 PM.");
+      } else if (orden.includes("pago")) {
+        hablar("Recuerda que debes pagar el recibo de luz antes de las 6 PM jefe.");
+      } else if (orden.includes("llamar")) {
+        hablar("¿A quién deseas que llame jefe? No tengo contactos aún, pero pronto agregaré esa opción.");
+      } else if (orden.includes("gracias")) {
+        hablar("Con gusto jefe, para eso estoy aquí.");
+      } else {
+        hablar("Lo siento jefe, aún no entiendo esa orden. Estoy aprendiendo.");
+      }
     }
   </script>
 </body>
