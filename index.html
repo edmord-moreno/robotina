@@ -2,120 +2,99 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Robotina - Secretaria Personal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Robotina - Secretaria IA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      font-family: 'Inter', sans-serif;
       background: #f4f4f4;
-      text-align: center;
-      padding: 2em;
-      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     h1 {
-      color: #ff6600;
-    }
-    .boton {
-      background-color: #ff6600;
-      border: none;
+      background: orange;
       color: white;
-      padding: 1em 2em;
-      margin: 1em;
-      font-size: 1.1em;
+      width: 100%;
+      padding: 1rem;
+      text-align: center;
+    }
+    .tareas {
+      width: 90%;
+      max-width: 600px;
+      margin-top: 1rem;
+    }
+    .tarea {
+      background: white;
+      margin: 0.5rem 0;
+      padding: 1rem;
       border-radius: 10px;
       cursor: pointer;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    #respuesta, #tareas {
-      margin-top: 2em;
-      font-size: 1.2em;
+    .tarea:hover {
+      background: #ffe4b3;
     }
-    #inputOrden {
-      margin-top: 1em;
-      padding: 10px;
-      width: 300px;
-      font-size: 1em;
+    #respuesta {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      color: #333;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h1>⚙️ Hola jefe, soy Robotina, tu secretaria personal</h1>
-
-  <button class="boton" onclick="saludar()">🔌 Saludar</button>
-  <button class="boton" onclick="mostrarTareas()">📅 Mostrar Tareas</button>
-
-  <div id="tareas"></div>
-
-  <input type="text" id="inputOrden" placeholder="Escribe una orden como: agenda, pagos...">
-  <button class="boton" onclick="ejecutarOrden()">Ejecutar Orden</button>
+  <h1>🤖 Robotina - Tu Secretaria IA</h1>
+  <div class="tareas">
+    <div class="tarea" onclick="ejecutar('agenda')">📅 Revisar mi agenda del día</div>
+    <div class="tarea" onclick="ejecutar('pagos')">💳 Revisar pagos de servicios y bancos</div>
+    <div class="tarea" onclick="ejecutar('llamadas')">📞 Llamadas importantes</div>
+    <div class="tarea" onclick="ejecutar('recordatorios')">📝 Tareas y recordatorios</div>
+    <div class="tarea" onclick="ejecutar('descanso')">🧘 Tiempo de descanso</div>
+  </div>
 
   <div id="respuesta"></div>
 
   <script>
+    const respuestas = {
+      agenda: "Revisando tu agenda de hoy. Accediendo a tu calendario...",
+      pagos: "Consultando pagos de servicios y bancos. Accediendo a tus registros...",
+      llamadas: "Buscando llamadas importantes...",
+      recordatorios: "Mostrando tareas y recordatorios importantes...",
+      descanso: "Es hora de un descanso. Respira profundo y relájate, jefe."
+    };
+
     function hablar(texto) {
-      const mensaje = new SpeechSynthesisUtterance(texto);
-      mensaje.lang = "es-ES";
-      speechSynthesis.speak(mensaje);
+      const voz = new SpeechSynthesisUtterance(texto);
+      voz.lang = 'es-CO';
+      voz.pitch = 1;
+      voz.rate = 1;
+      window.speechSynthesis.speak(voz);
     }
 
-    function saludar() {
-      const saludo = "Hola jefe, estoy lista para ayudarte con tus tareas diarias.";
+    function ejecutar(tarea) {
+      const mensaje = respuestas[tarea] || "No entendí la tarea, jefe.";
+      document.getElementById("respuesta").innerText = mensaje;
+      hablar(mensaje);
+
+      // Aquí puedes conectar con APIs externas o servicios reales si tienes permisos
+      if (tarea === 'agenda') {
+        console.log("Conectar con Google Calendar...");
+        // TODO: Integrar Google Calendar API
+      } else if (tarea === 'pagos') {
+        console.log("Conectar con plataformas de bancos o servicios...");
+        // TODO: Añadir integración con servicios y bancos
+      }
+    }
+
+    // Saludo inicial
+    window.onload = () => {
+      const saludo = "Hola jefe, soy Robotina. ¿Qué desea que haga hoy?";
       document.getElementById("respuesta").innerText = saludo;
       hablar(saludo);
-    }
-
-    function mostrarTareas() {
-      const tareas = [
-        "Agenda diaria",
-        "Pagos pendientes",
-        "Llamadas importantes",
-        "Tareas por hacer",
-        "Tiempo de descanso"
-      ];
-      let html = "<h3>Estas son tus tareas disponibles:</h3><ul style='list-style:none;'>";
-      tareas.forEach((tarea, i) => {
-        html += `<li><button class='boton' onclick='ejecutarDesdeLista("${tarea}")'>${tarea}</button></li>`;
-      });
-      html += "</ul>";
-      document.getElementById("tareas").innerHTML = html;
-    }
-
-    function ejecutarDesdeLista(tarea) {
-      procesarOrden(tarea.toLowerCase());
-    }
-
-    function ejecutarOrden() {
-      const orden = document.getElementById("inputOrden").value.toLowerCase();
-      procesarOrden(orden);
-    }
-
-    function procesarOrden(orden) {
-      let respuesta = "";
-      switch (orden) {
-        case "agenda":
-        case "agenda diaria":
-          respuesta = "Hoy tienes reunión a las 10 AM y enviar informe a las 3 PM.";
-          break;
-        case "pagos":
-        case "pagos pendientes":
-          respuesta = "Debes pagar el servicio de internet y la luz hoy.";
-          break;
-        case "llamadas":
-          respuesta = "Tienes una llamada con el cliente Pedro a las 2 PM.";
-          break;
-        case "tareas":
-        case "tareas por hacer":
-          respuesta = "Revisar correos, enviar propuesta y preparar presentación.";
-          break;
-        case "descanso":
-        case "tiempo de descanso":
-          respuesta = "Te recomiendo tomar un descanso de 15 minutos, jefe.";
-          break;
-        default:
-          respuesta = "No entiendo la orden, jefe. Por favor escribe una tarea válida.";
-      }
-      document.getElementById("respuesta").innerText = respuesta;
-      hablar(respuesta);
-    }
+    };
   </script>
 </body>
 </html>
