@@ -1,15 +1,84 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Robotina Asistente</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robotina - Asistente Personal</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      text-align: center;
+      padding: 50px;
+    }
+    .robotina {
+      border: 2px solid #ccc;
+      border-radius: 15px;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-  <h1>Hola, soy Robotina 🤖</h1>
-  <button onclick="hablar()">Háblame</button>
+  <div class="robotina">
+    <h1>¡Hola humano! Soy Robotina 🤖</h1>
+    <p>Tu asistente personal virtual. Puedo ayudarte con tu agenda, recordatorios, pagos y más.</p>
+    <button onclick="hablar()">Hablar</button>
+    <button onclick="escuchar()">Escuchar</button>
+  </div>
 
-  <script src="app.js"></script>
+  <script>
+    const tareas = [
+      "Revisar correos importantes",
+      "Llamar a mamá a las 3:00 PM",
+      "Pagar el recibo de la luz antes de las 6:00 PM",
+      "Terminar el informe mensual"
+    ];
+
+    function hablar(texto = "¡Hola! Soy Robotina y estoy lista para ayudarte.") {
+      const mensaje = new SpeechSynthesisUtterance(texto);
+      mensaje.lang = "es-CO";
+      speechSynthesis.speak(mensaje);
+    }
+
+    function escuchar() {
+      const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      reconocimiento.lang = "es-CO";
+      reconocimiento.start();
+
+      reconocimiento.onresult = function(event) {
+        const comando = event.results[0][0].transcript.toLowerCase();
+        if (comando.includes("tareas")) {
+          hablar("Estas son tus tareas para hoy:");
+          tareas.forEach((tarea, i) => setTimeout(() => hablar(tarea), i * 2000));
+        } else if (comando.includes("agenda")) {
+          hablar("Hoy tienes una reunión a las 10 de la mañana y una llamada importante a las 3 de la tarde.");
+        } else if (comando.includes("recordatorio")) {
+          hablar("Te recuerdo que debes pagar el agua mañana.");
+        } else {
+          hablar("Lo siento, no entendí. Puedes decir: mostrar tareas, agenda o recordatorio.");
+        }
+      };
+
+      reconocimiento.onerror = function(event) {
+        hablar("Hubo un error al escuchar. Intenta de nuevo.");
+      };
+    }
+  </script>
 </body>
 </html>
