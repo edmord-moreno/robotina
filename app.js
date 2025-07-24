@@ -1,40 +1,42 @@
-function hablar(texto) {
+function hablarRobotina(texto = "Hola jefe, soy Robotina y estoy lista para servirle. ¿Qué desea que haga hoy?") {
   const mensaje = new SpeechSynthesisUtterance(texto);
   mensaje.lang = "es-CO";
   speechSynthesis.speak(mensaje);
-  document.getElementById("respuesta").textContent = texto;
 }
 
-function saludar() {
-  hablar("Hola, Jefe. Soy Robotina, su secretaria personal. Estoy lista para ayudarlo.");
-}
-
-function iniciarReconocimiento() {
-  const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+function escucharOrden() {
+  const reconocimiento = new webkitSpeechRecognition() || new SpeechRecognition();
   reconocimiento.lang = "es-CO";
-  reconocimiento.start();
-  hablar("Estoy escuchando, Jefe...");
+  reconocimiento.continuous = false;
+  reconocimiento.interimResults = false;
 
-  reconocimiento.onresult = function(event) {
-    const comando = event.results[0][0].transcript.toLowerCase();
-    procesarComando(comando);
+  hablarRobotina("Estoy escuchando, jefe...");
+
+  reconocimiento.start();
+
+  reconocimiento.onresult = (event) => {
+    const texto = event.results[0][0].transcript;
+    document.getElementById("transcripcion").textContent = texto;
+    procesarOrden(texto.toLowerCase());
   };
 
-  reconocimiento.onerror = function(event) {
-    hablar("Lo siento, Jefe. Inténtelo de nuevo.");
+  reconocimiento.onerror = () => {
+    hablarRobotina("Lo siento jefe, no entendí. Intente de nuevo.");
   };
 }
 
-function procesarComando(comando) {
-  if (comando.includes("agenda")) {
-    hablar("Claro Jefe, hoy tiene reunión con el equipo a las 10 AM y llamada a las 3 PM.");
-  } else if (comando.includes("tareas")) {
-    hablar("Sus tareas de hoy son: revisar correos, enviar reporte y llamar al cliente.");
-  } else if (comando.includes("pagos")) {
-    hablar("Debe pagar el recibo de la luz y el internet antes de las 5 PM.");
-  } else if (comando.includes("llamar")) {
-    hablar("¿A quién desea que llame, Jefe?");
+function procesarOrden(orden) {
+  if (orden.includes("tareas de hoy")) {
+    hablarRobotina("Jefe, hoy debe enviar el informe, pagar el internet, y llamar a la señora Sandra a las 4 de la tarde.");
+  } else if (orden.includes("agenda")) {
+    hablarRobotina("Jefe, su agenda está libre hasta las 3 de la tarde.");
+  } else if (orden.includes("pagar")) {
+    hablarRobotina("Tiene que pagar el recibo de la luz hoy antes de las 6 p.m.");
+  } else if (orden.includes("llamar")) {
+    hablarRobotina("Debe llamar a Juan Pérez a las 5 de la tarde.");
+  } else if (orden.includes("gracias")) {
+    hablarRobotina("Con gusto, jefe.");
   } else {
-    hablar("Lo siento, Jefe. No entendí el comando. Puede repetirlo.");
+    hablarRobotina("Jefe, no entendí la orden. ¿Podría repetirlo?");
   }
 }

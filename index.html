@@ -1,107 +1,84 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Robotina Asistente Virtual</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robotina Secretaria Virtual</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f0f0f5;
-      margin: 0;
-      padding: 0;
+      background-color: #f2f2f2;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      margin: 0;
     }
     h1 {
-      color: #333;
+      color: #FF6F00;
     }
     button {
-      margin: 10px;
-      padding: 15px 30px;
+      padding: 10px 20px;
       font-size: 16px;
       border: none;
-      border-radius: 10px;
+      background-color: #FF6F00;
+      color: white;
+      border-radius: 5px;
       cursor: pointer;
     }
-    #speakBtn {
-      background-color: #4CAF50;
-      color: white;
-    }
-    #listenBtn {
-      background-color: #2196F3;
-      color: white;
-    }
-    #response {
-      margin-top: 30px;
-      font-size: 18px;
-      color: #555;
+    #transcripcion {
+      margin-top: 20px;
+      font-style: italic;
+      color: #333;
     }
   </style>
 </head>
 <body>
-  <h1>Robotina al servicio de mi Jefe</h1>
-  <button id="speakBtn">Hablar</button>
-  <button id="listenBtn">Escuchar</button>
-  <div id="response">Hola jefe, estoy lista para obedecer tus órdenes.</div>
+  <h1>🤖 Robotina, tu secretaria personal</h1>
+  <button onclick="hablar()">Habla, Robotina</button>
+  <button onclick="escuchar()">Escuchar tu orden</button>
+  <p id="transcripcion"></p>
 
   <script>
-    const responseDiv = document.getElementById("response");
-
-    // Función para que Robotina hable
-    function speak(text) {
-      const synth = window.speechSynthesis;
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = "es-ES";
-      synth.speak(utter);
-      responseDiv.textContent = text;
+    function hablar(mensaje = "Hola jefe, soy Robotina, tu secretaria personal. ¿Qué deseas que haga por ti hoy?") {
+      const speech = new SpeechSynthesisUtterance(mensaje);
+      speech.lang = "es-CO";
+      speechSynthesis.speak(speech);
     }
 
-    // Botón para hablar
-    document.getElementById("speakBtn").addEventListener("click", () => {
-      speak("Hola jefe, estoy lista para ayudarte. Dime qué necesitas.");
-    });
+    function escuchar() {
+      const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      reconocimiento.lang = "es-CO";
+      reconocimiento.interimResults = false;
+      reconocimiento.maxAlternatives = 1;
 
-    // Botón para escuchar comandos
-    document.getElementById("listenBtn").addEventListener("click", () => {
-      if (!('webkitSpeechRecognition' in window)) {
-        speak("Lo siento jefe, tu navegador no soporta reconocimiento de voz.");
-        return;
+      hablar("Escuchando su orden, jefe");
+
+      reconocimiento.start();
+
+      reconocimiento.onresult = function(event) {
+        const comando = event.results[0][0].transcript.toLowerCase();
+        document.getElementById("transcripcion").innerText = "Usted dijo: " + comando;
+        procesarOrden(comando);
+      };
+
+      reconocimiento.onerror = function() {
+        hablar("Lo siento jefe, no pude entender. Intente de nuevo.");
+      };
+    }
+
+    function procesarOrden(comando) {
+      if (comando.includes("agenda") || comando.includes("tareas")) {
+        hablar("Revisando su agenda jefe. Hoy tiene que pagar el recibo de la luz, llamar a su mamá y enviar el informe del proyecto");
+      } else if (comando.includes("llama") || comando.includes("llamar")) {
+        hablar("Muy bien jefe, anotando en la agenda que debe realizar una llamada. ¿A quién desea llamar?");
+      } else if (comando.includes("pago") || comando.includes("pagos")) {
+        hablar("Recordatorio de pagos jefe. Hoy debe pagar el arriendo y la tarjeta de crédito.");
+      } else {
+        hablar("Lo siento jefe, esa orden aún no está en mi sistema. ¿Desea agregarla como nueva tarea?");
       }
-
-      const recognition = new webkitSpeechRecognition();
-      recognition.lang = "es-ES";
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
-      recognition.onstart = () => {
-        speak("Te escucho, jefe. Adelante con la orden.");
-      };
-
-      recognition.onerror = (event) => {
-        speak("Lo siento jefe, ocurrió un error al escuchar. Intenta de nuevo.");
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript.toLowerCase();
-        if (transcript.includes("tarea")) {
-          speak("Jefe, hoy tienes reunión a las 10 AM, llamada con el cliente a las 3 PM y revisar reportes a las 6.");
-        } else if (transcript.includes("agenda")) {
-          speak("Tu agenda está llena de éxito, jefe. No olvides comer y descansar.");
-        } else if (transcript.includes("pago")) {
-          speak("Jefe, recuerda pagar la luz antes del viernes.");
-        } else if (transcript.includes("llamar")) {
-          speak("¿A quién deseas llamar, jefe? Te puedo ayudar con eso.");
-        } else {
-          speak("No entendí bien la orden, jefe. ¿Puedes repetirla?");
-        }
-      };
-
-      recognition.start();
-    });
+    }
   </script>
 </body>
 </html>
