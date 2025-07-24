@@ -1,84 +1,107 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Robotina - Asistente Personal</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Robotina Asistente Virtual</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f4f9;
-      color: #333;
-      text-align: center;
-      padding: 50px;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
-    .robotina {
-      border: 2px solid #ccc;
-      border-radius: 15px;
-      padding: 20px;
-      background-color: #fff;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    h1 {
+      color: #333;
     }
     button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 10px 20px;
       margin: 10px;
+      padding: 15px 30px;
       font-size: 16px;
-      border-radius: 5px;
+      border: none;
+      border-radius: 10px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #0056b3;
+    #speakBtn {
+      background-color: #4CAF50;
+      color: white;
+    }
+    #listenBtn {
+      background-color: #2196F3;
+      color: white;
+    }
+    #response {
+      margin-top: 30px;
+      font-size: 18px;
+      color: #555;
     }
   </style>
 </head>
 <body>
-  <div class="robotina">
-    <h1>¡Hola humano! Soy Robotina 🤖</h1>
-    <p>Tu asistente personal virtual. Puedo ayudarte con tu agenda, recordatorios, pagos y más.</p>
-    <button onclick="hablar()">Hablar</button>
-    <button onclick="escuchar()">Escuchar</button>
-  </div>
+  <h1>Robotina al servicio de mi Jefe</h1>
+  <button id="speakBtn">Hablar</button>
+  <button id="listenBtn">Escuchar</button>
+  <div id="response">Hola jefe, estoy lista para obedecer tus órdenes.</div>
 
   <script>
-    const tareas = [
-      "Revisar correos importantes",
-      "Llamar a mamá a las 3:00 PM",
-      "Pagar el recibo de la luz antes de las 6:00 PM",
-      "Terminar el informe mensual"
-    ];
+    const responseDiv = document.getElementById("response");
 
-    function hablar(texto = "¡Hola! Soy Robotina y estoy lista para ayudarte.") {
-      const mensaje = new SpeechSynthesisUtterance(texto);
-      mensaje.lang = "es-CO";
-      speechSynthesis.speak(mensaje);
+    // Función para que Robotina hable
+    function speak(text) {
+      const synth = window.speechSynthesis;
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "es-ES";
+      synth.speak(utter);
+      responseDiv.textContent = text;
     }
 
-    function escuchar() {
-      const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      reconocimiento.lang = "es-CO";
-      reconocimiento.start();
+    // Botón para hablar
+    document.getElementById("speakBtn").addEventListener("click", () => {
+      speak("Hola jefe, estoy lista para ayudarte. Dime qué necesitas.");
+    });
 
-      reconocimiento.onresult = function(event) {
-        const comando = event.results[0][0].transcript.toLowerCase();
-        if (comando.includes("tareas")) {
-          hablar("Estas son tus tareas para hoy:");
-          tareas.forEach((tarea, i) => setTimeout(() => hablar(tarea), i * 2000));
-        } else if (comando.includes("agenda")) {
-          hablar("Hoy tienes una reunión a las 10 de la mañana y una llamada importante a las 3 de la tarde.");
-        } else if (comando.includes("recordatorio")) {
-          hablar("Te recuerdo que debes pagar el agua mañana.");
+    // Botón para escuchar comandos
+    document.getElementById("listenBtn").addEventListener("click", () => {
+      if (!('webkitSpeechRecognition' in window)) {
+        speak("Lo siento jefe, tu navegador no soporta reconocimiento de voz.");
+        return;
+      }
+
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = "es-ES";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        speak("Te escucho, jefe. Adelante con la orden.");
+      };
+
+      recognition.onerror = (event) => {
+        speak("Lo siento jefe, ocurrió un error al escuchar. Intenta de nuevo.");
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        if (transcript.includes("tarea")) {
+          speak("Jefe, hoy tienes reunión a las 10 AM, llamada con el cliente a las 3 PM y revisar reportes a las 6.");
+        } else if (transcript.includes("agenda")) {
+          speak("Tu agenda está llena de éxito, jefe. No olvides comer y descansar.");
+        } else if (transcript.includes("pago")) {
+          speak("Jefe, recuerda pagar la luz antes del viernes.");
+        } else if (transcript.includes("llamar")) {
+          speak("¿A quién deseas llamar, jefe? Te puedo ayudar con eso.");
         } else {
-          hablar("Lo siento, no entendí. Puedes decir: mostrar tareas, agenda o recordatorio.");
+          speak("No entendí bien la orden, jefe. ¿Puedes repetirla?");
         }
       };
 
-      reconocimiento.onerror = function(event) {
-        hablar("Hubo un error al escuchar. Intenta de nuevo.");
-      };
-    }
+      recognition.start();
+    });
   </script>
 </body>
 </html>
