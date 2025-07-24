@@ -1,38 +1,40 @@
-const robotina = window.speechSynthesis;
-const reconocimiento = window.SpeechRecognition || window.webkitSpeechRecognition;
-const reconocer = new reconocimiento();
-reconocer.lang = 'es-ES';
-
-function hablar(texto = 'Hola humano, soy Robotina, tu secretaria personal') {
-  const voz = new SpeechSynthesisUtterance(texto);
-  voz.lang = 'es-ES';
-  robotina.speak(voz);
+function hablar(texto) {
+  const mensaje = new SpeechSynthesisUtterance(texto);
+  mensaje.lang = "es-CO";
+  speechSynthesis.speak(mensaje);
+  document.getElementById("respuesta").textContent = texto;
 }
 
-function iniciarEscucha() {
-  reconocer.start();
-  hablar('Te escucho, ¿qué orden tienes para mí?');
+function saludar() {
+  hablar("Hola, Jefe. Soy Robotina, su secretaria personal. Estoy lista para ayudarlo.");
 }
 
-let tareas = [];
+function iniciarReconocimiento() {
+  const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  reconocimiento.lang = "es-CO";
+  reconocimiento.start();
+  hablar("Estoy escuchando, Jefe...");
 
-reconocer.onresult = function(event) {
-  const orden = event.results[0][0].transcript.toLowerCase();
-  document.getElementById('resultado').innerText = 'Orden recibida: ' + orden;
+  reconocimiento.onresult = function(event) {
+    const comando = event.results[0][0].transcript.toLowerCase();
+    procesarComando(comando);
+  };
 
-  if (orden.includes('agrega tarea')) {
-    const tarea = orden.replace('agrega tarea', '').trim();
-    tareas.push(tarea);
-    hablar(`Tarea "${tarea}" agregada a tu lista`);
-  } else if (orden.includes('qué tareas tengo') || orden.includes('listar tareas')) {
-    if (tareas.length === 0) {
-      hablar('No tienes tareas pendientes');
-    } else {
-      hablar('Estas son tus tareas: ' + tareas.join(', '));
-    }
-  } else if (orden.includes('saluda')) {
-    hablar('Hola humano, ¿cómo puedo ayudarte hoy?');
+  reconocimiento.onerror = function(event) {
+    hablar("Lo siento, Jefe. Inténtelo de nuevo.");
+  };
+}
+
+function procesarComando(comando) {
+  if (comando.includes("agenda")) {
+    hablar("Claro Jefe, hoy tiene reunión con el equipo a las 10 AM y llamada a las 3 PM.");
+  } else if (comando.includes("tareas")) {
+    hablar("Sus tareas de hoy son: revisar correos, enviar reporte y llamar al cliente.");
+  } else if (comando.includes("pagos")) {
+    hablar("Debe pagar el recibo de la luz y el internet antes de las 5 PM.");
+  } else if (comando.includes("llamar")) {
+    hablar("¿A quién desea que llame, Jefe?");
   } else {
-    hablar('Lo siento, no entendí esa orden');
+    hablar("Lo siento, Jefe. No entendí el comando. Puede repetirlo.");
   }
-};
+}
